@@ -1,0 +1,9 @@
+.gradle/
+.idea/
+build/
+app/build/
+local.properties
+*.class
+*.iml
+.DS_Store
+python_prototype/__pycache__/
