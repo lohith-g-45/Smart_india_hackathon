@@ -1,0 +1,23 @@
+# Core (works in any environment, including this dev sandbox)
+networkx>=3.0
+numpy>=1.24
+scipy>=1.10
+
+# Production spatial index (spec-specified). Falls back to scipy.cKDTree
+# automatically if not installed -- see phase_d_spatial_index.py.
+rtree>=1.0
+
+# Production geo/OSM tooling (spec-specified)
+shapely>=2.0
+geopy>=2.4
+pyosmium>=3.6
+
+# Production GNN (spec-specified). See phase_f_gnn_map_matching_pyg.py.
+# NOT required to run phase_f_gnn_lite_numpy.py, the numpy-only stand-in.
+torch>=2.1
+torch-geometric>=2.5
+onnx>=1.15
+onnxruntime>=1.16
+
+# Testing
+pytest>=7.4
