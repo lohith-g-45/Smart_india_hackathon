@@ -1063,6 +1063,17 @@ def load_sequences(
 
     return data
 
+sample_df = read_csv_safely(
+    feature_files[
+        TRAIN_IDS[0]
+    ]
+)
+
+feature_columns = [
+    f for f in DEPLOYABLE_SMARTPHONE_FEATURES
+    if f in sample_df.columns
+]
+
 
 train_data = load_sequences(
     TRAIN_IDS,
@@ -1091,16 +1102,7 @@ print("=" * 70)
 
 
 # Get numeric columns from the first feature file, filtering for deployable features.
-sample_df = read_csv_safely(
-    feature_files[
-        TRAIN_IDS[0]
-    ]
-)
 
-feature_columns = [
-    f for f in DEPLOYABLE_SMARTPHONE_FEATURES
-    if f in sample_df.columns
-]
 
 print(
     "Numeric deployable feature count:",
