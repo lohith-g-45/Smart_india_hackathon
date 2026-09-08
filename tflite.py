@@ -63,34 +63,34 @@ CHECKPOINT_PATH = (
     / "results"
     / "stage8"
     / "models"
-    / "nav_shield_lstm_best.pt"
+    / "nav_shield_lstm_android_107.pt"
 )
 
 OUTPUT_DIR = (
     BASE_DIR
     / "results"
     / "stage8"
-    / "tflite"
+    / "tflite_android"
 )
 
 MODEL_DIR = (
     OUTPUT_DIR
-    / "nav_shield"
+    / "nav_shield_107"
 )
 
 TFLITE_PATH = (
     MODEL_DIR
-    / "nav_shield_lstm_stage8.tflite"
+    / "nav_shield_lstm_android_107.tflite"
 )
 
 METADATA_PATH = (
     OUTPUT_DIR
-    / "stage8_model_metadata.json"
+    / "stage8_model_metadata_107.json"
 )
 
 DECISION_CONFIG_PATH = (
     OUTPUT_DIR
-    / "stage8_decision_config.json"
+    / "stage8_decision_config_107.json"
 )
 
 TARGET_SCALER_PATH = (
@@ -103,7 +103,7 @@ TARGET_SCALER_PATH = (
 
 
 SEQUENCE_LENGTH = 30
-INPUT_FEATURES = 137
+INPUT_FEATURES = 107
 HIDDEN_SIZE = 64
 NUM_LAYERS = 2
 OUTPUT_SIZE = 2

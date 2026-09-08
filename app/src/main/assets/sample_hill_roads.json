@@ -1,0 +1,235 @@
+{
+  "nodes": {
+    "N1": {
+      "lat": 12.9716,
+      "lon": 77.5946
+    },
+    "N2": {
+      "lat": 12.972131395316328,
+      "lon": 77.5946961532261
+    },
+    "N3": {
+      "lat": 12.971718042883227,
+      "lon": 77.59505207979282
+    },
+    "N4": {
+      "lat": 12.975,
+      "lon": 77.5946
+    },
+    "N5": {
+      "lat": 12.975676068579686,
+      "lon": 77.59485251677938
+    },
+    "N6": {
+      "lat": 12.975589344563158,
+      "lon": 77.59502347688215
+    },
+    "N7": {
+      "lat": 12.977134898240887,
+      "lon": 77.596
+    },
+    "N8": {
+      "lat": 12.976999999963406,
+      "lon": 77.59613843380032
+    },
+    "N9": {
+      "lat": 12.976865101759113,
+      "lon": 77.596
+    },
+    "N10": {
+      "lat": 12.976999999963406,
+      "lon": 77.59586156619969
+    },
+    "N11": {
+      "lat": 12.979,
+      "lon": 77.5946
+    },
+    "N12": {
+      "lat": 12.979899321605918,
+      "lon": 77.59460000000001
+    },
+    "N13": {
+      "lat": 12.981,
+      "lon": 77.5946
+    },
+    "N14": {
+      "lat": 12.982079185927102,
+      "lon": 77.59460000000001
+    },
+    "N15": {
+      "lat": 12.98099999998373,
+      "lon": 77.59469229068532
+    },
+    "N16": {
+      "lat": 12.982079185910832,
+      "lon": 77.59469229108595
+    },
+    "N17": {
+      "lat": 12.983,
+      "lon": 77.5946
+    },
+    "N18": {
+      "lat": 12.985697964817756,
+      "lon": 77.59460000000001
+    }
+  },
+  "ways": [
+    {
+      "id": "W_hairpin_1",
+      "nodes": [
+        "N1",
+        "N2"
+      ],
+      "tags": {
+        "highway": "trunk",
+        "maxspeed": "30",
+        "name": "Ghat Road"
+      }
+    },
+    {
+      "id": "W_hairpin_2",
+      "nodes": [
+        "N2",
+        "N3"
+      ],
+      "tags": {
+        "highway": "trunk",
+        "maxspeed": "20",
+        "name": "Ghat Road"
+      }
+    },
+    {
+      "id": "W_fork_main",
+      "nodes": [
+        "N4",
+        "N5"
+      ],
+      "tags": {
+        "highway": "secondary",
+        "maxspeed": "40",
+        "name": "Main Fork Road"
+      }
+    },
+    {
+      "id": "W_fork_alt",
+      "nodes": [
+        "N4",
+        "N6"
+      ],
+      "tags": {
+        "highway": "tertiary",
+        "maxspeed": "30",
+        "name": "Alt Fork Road"
+      }
+    },
+    {
+      "id": "W_roundabout_0",
+      "nodes": [
+        "N7",
+        "N8"
+      ],
+      "tags": {
+        "highway": "primary",
+        "junction": "roundabout",
+        "maxspeed": "20"
+      }
+    },
+    {
+      "id": "W_roundabout_1",
+      "nodes": [
+        "N8",
+        "N9"
+      ],
+      "tags": {
+        "highway": "primary",
+        "junction": "roundabout",
+        "maxspeed": "20"
+      }
+    },
+    {
+      "id": "W_roundabout_2",
+      "nodes": [
+        "N9",
+        "N10"
+      ],
+      "tags": {
+        "highway": "primary",
+        "junction": "roundabout",
+        "maxspeed": "20"
+      }
+    },
+    {
+      "id": "W_roundabout_3",
+      "nodes": [
+        "N10",
+        "N7"
+      ],
+      "tags": {
+        "highway": "primary",
+        "junction": "roundabout",
+        "maxspeed": "20"
+      }
+    },
+    {
+      "id": "W_oneway",
+      "nodes": [
+        "N11",
+        "N12"
+      ],
+      "tags": {
+        "highway": "residential",
+        "oneway": "yes",
+        "maxspeed": "30"
+      }
+    },
+    {
+      "id": "W_motorway",
+      "nodes": [
+        "N13",
+        "N14"
+      ],
+      "tags": {
+        "highway": "motorway",
+        "maxspeed": "100"
+      }
+    },
+    {
+      "id": "W_service",
+      "nodes": [
+        "N15",
+        "N16"
+      ],
+      "tags": {
+        "highway": "service",
+        "maxspeed": "20"
+      }
+    }
+  ],
+  "elevation_m": {
+    "N1": 900,
+    "N2": 940,
+    "N3": 990,
+    "N4": 850,
+    "N5": 852,
+    "N6": 848
+  },
+  "test_reference_points": {
+    "hairpin_apex_node": "N2",
+    "fork_test_point": {
+      "lat": 12.975200325333603,
+      "lon": 77.59470474529223
+    },
+    "tunnel_query_point": {
+      "lat": 12.984348982408878,
+      "lon": 77.59460000000001
+    },
+    "off_road_point": {
+      "lat": 12.97159999989839,
+      "lon": 77.5948307179907
+    },
+    "private_road_point": {
+      "lat": 13.5,
+      "lon": 78.2
+    }
+  }
+}

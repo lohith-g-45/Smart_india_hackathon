@@ -1,18 +1,20 @@
 package com.navshield.map.members
 
 import com.navshield.map.contract.MapMatchQuery
+import com.navshield.map.contract.Member5Result
+import com.navshield.map.contract.NavShieldSensorState
 import com.navshield.map.engine.MemberStatus
 
 /**
  * Interface for Member 2: Sensor Fusion (GNSS + IMU).
- * NOT AVAILABLE YET.
+ * Provides the complete fused sensor state for map matching and state estimation.
  */
 interface SensorFusionSource {
     /**
-     * Provides the current fused sensor state for map matching.
+     * Provides the current fused sensor state.
      * Returns null if sensors are unavailable or status is not CONNECTED.
      */
-    fun getCurrentQuery(): MapMatchQuery?
+    fun getCurrentState(): NavShieldSensorState?
     
     fun getStatus(): MemberStatus
 }
@@ -31,14 +33,13 @@ interface RoutingEngine {
 }
 
 /**
- * Interface for Member 5: Perception / Visual SLAM.
- * NOT AVAILABLE YET.
+ * Interface for Member 5: AI Drift Guardian (LSTM).
  */
-interface PerceptionModule {
+interface Member5DriftGuardian {
     /**
-     * Provides visual confirmation of road features (e.g. traffic signs, lane count).
+     * Analyzes sensor sequences to predict navigation drift/errors.
      */
-    fun getVisualCues(): List<String>
-    
+    fun predict(sensorState: NavShieldSensorState): Member5Result?
+
     fun getStatus(): MemberStatus
 }

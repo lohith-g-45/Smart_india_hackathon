@@ -11,13 +11,15 @@ import com.navshield.map.contract.MapMatchResult
  * 
  * STATUS: WAITING_FOR_MEMBER (Actual ONNX weights and SQLite DB are not yet available).
  */
-class Member1OnnxEngine : MapMatchingEngine {
+class Member1OnnxEngine(private val repository: RoadRepository) : MapMatchingEngine {
+
+    private val basicEngine = BasicMapMatchingEngine(repository)
 
     override fun isReady(): Boolean {
         // In production, this would check for the existence of:
         // 1. navshield_roads.sqlite
         // 2. map_matching_gnn.onnx
-        return false 
+        return repository.isReady()
     }
 
     override fun match(query: MapMatchQuery): MapMatchResult {
@@ -25,11 +27,12 @@ class Member1OnnxEngine : MapMatchingEngine {
             throw IllegalStateException("Member 1 Engine is not ready (missing models/DB)")
         }
         
-        // 1. Query SQLite for nearby candidates (Phase D/E)
-        // 2. Extract features for GNN (Phase F)
-        // 3. Run ONNX Inference (Phase F)
-        // 4. Return formatted MapMatchResult
+        // 1. Run basic map matching as fallback/baseline
+        val result = basicEngine.match(query)
+
+        // 2. Future: Run ONNX Inference for learned re-ranking
+        // This is where the ONNX runtime would be called to re-score result.candidateRoads
         
-        throw UnsupportedOperationException("Actual ONNX implementation requires model weights")
+        return result
     }
 }

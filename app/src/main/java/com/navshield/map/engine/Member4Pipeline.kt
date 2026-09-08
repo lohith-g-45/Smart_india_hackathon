@@ -37,7 +37,12 @@ class Member4Pipeline {
         isInitialized = false
     }
 
-    fun update(sensorInput: MapMatchQuery, mapResult: MapMatchResult?, timestamp: Long): NavShieldTrustState {
+    fun update(
+        sensorInput: NavShieldSensorState, 
+        mapResult: MapMatchResult?, 
+        aiPrediction: Member5Result?,
+        timestamp: Long
+    ): NavShieldTrustState {
         if (!isInitialized) {
             refLat = sensorInput.latitude
             refLon = sensorInput.longitude
@@ -48,9 +53,8 @@ class Member4Pipeline {
         val dt = (timestamp - lastTimestamp) / 1000.0
         lastTimestamp = timestamp
 
-        // Phase G: FSM Update (State Machine)
-        val gnssConfidence = if (sensorInput.speed > 0) 1.0 else 0.5 // Simplified logic
-        val mode = fsm.update(gnssConfidence, 1.0) 
+        // Phase G: FSM Update (State Machine) using REAL Member 2 data
+        val mode = fsm.update(sensorInput, 1.0)
 
         // Phase F: Multi-Hypothesis Update
         val bestHypo = mhe.update(sensorInput, mapResult, dt, refLat, refLon)
@@ -58,27 +62,46 @@ class Member4Pipeline {
 
         // Phase D: NHC Constraint (Applied every cycle)
         // Detect turn for R_nhc scaling
-        val isTurning = abs(ukf.x[3, 0] - Math.toRadians(sensorInput.heading)) > 0.05
+        val isTurning = abs(ukf.x[3, 0] - Math.toRadians(sensorInput.bearing)) > 0.05
         applyNHC(ukf, isTurning)
 
         // Phase I: Predictive Drift Guard
+        // Integrate Member 5 AI prediction into the drift detection logic
         val pTrace = ukf.P.trace()
-        driftWarning = pTrace > 50.0 
+        val aiDriftDetected = aiPrediction?.isDriftDetected ?: false
+        
+        driftWarning = pTrace > 50.0 || aiDriftDetected
+        
         if (driftWarning) {
             // Phase I ratio requirement: apply proactive constraints
-            ukf.P[0,0] *= 0.95
-            ukf.P[1,1] *= 0.95
+            // If AI predicts high error, we become more conservative with covariance
+            val constraintFactor = if (aiDriftDetected) 0.90 else 0.95
+            ukf.P[0,0] *= constraintFactor
+            ukf.P[1,1] *= constraintFactor
         }
 
         // Phase H: Self-Healing (10-cycle GNSS recovery ramp)
-        if (mode == NavigationMode.RECOVERY) {
-            gnssRecoveryCycles++
-            w_gnss = (gnssRecoveryCycles.toDouble() / RECOVERY_RAMP_LIMIT).coerceIn(0.0, 1.0)
-        } else if (mode == NavigationMode.GNSS_DENIED) {
-            gnssRecoveryCycles = 0
-            w_gnss = 0.0
+        w_gnss = when (mode) {
+            NavigationMode.RECOVERY -> {
+                gnssRecoveryCycles++
+                (gnssRecoveryCycles.toDouble() / RECOVERY_RAMP_LIMIT).coerceIn(0.0, 1.0)
+            }
+            NavigationMode.GNSS_DENIED -> {
+                gnssRecoveryCycles = 0
+                0.0
+            }
+            else -> {
+                gnssRecoveryCycles = 0
+                // Reduce trust if anomalous (Member 2 reported)
+                if (sensorInput.isAnomalous) 0.5 else 1.0
+            }
+        }
+
+        // AI Trust Weight based on predicted error
+        w_ai = if (aiPrediction != null) {
+            (1.0 / (1.0 + aiPrediction.predictedPositionErrorM / 10.0)).coerceIn(0.0, 1.0)
         } else {
-            w_gnss = 1.0
+            1.0
         }
 
         // Construct Output Contract

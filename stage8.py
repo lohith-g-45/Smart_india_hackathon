@@ -126,6 +126,117 @@ TARGET_COLUMNS = [
     "velocity_error_m_s",
 ]
 
+# The 107 smartphone-deployable features for Member 5
+DEPLOYABLE_SMARTPHONE_FEATURES = [
+    "S_time_seconds",
+    "time_difference_seconds",
+    "S_GPS LATITUDE (degrees)",
+    "S_GPS LONGITUDE (degrees)",
+    "S_GPS ALTITUDE (m)",
+    "S_GPS SPEED (Kmh)",
+    "S_GPS ACCURACY (m)",
+    "S_GPS ORIENTATION (°)",
+    "S_TIME SINCE START (ms)",
+    "S_ACCELEROMETER X (m/s²)",
+    "S_ACCELEROMETER Y (m/s²)",
+    "S_ACCELEROMETER Z (m/s²)",
+    "S_GRAVITY X (m/s²)",
+    "S_GRAVITY Y (m/s²)",
+    "S_GRAVITY Z (m/s²)",
+    "S_GYROSCOPE Yaw (rad/s)",
+    "S_GYROSCOPE Pitch (rad/s)",
+    "S_GYROSCOPE Roll (rad/s)",
+    "S_MAGNETIC FIELD X (µT)",
+    "S_MAGNETIC FIELD Y (µT)",
+    "S_MAGNETIC FIELD Z (µT)",
+    "S_ORIENTATION (Yaw) (°)",
+    "S_ORIENTATION (Pitch) (°)",
+    "S_ORIENTATION (Roll ) (°)",
+    "timestamp",
+    "elapsed_time",
+    "delta_time",
+    "accel_x",
+    "accel_y",
+    "accel_z",
+    "accel_magnitude",
+    "gyro_yaw",
+    "gyro_pitch",
+    "gyro_roll",
+    "gyro_magnitude",
+    "mag_x",
+    "mag_y",
+    "mag_z",
+    "mag_magnitude",
+    "gravity_x",
+    "gravity_y",
+    "gravity_z",
+    "gravity_magnitude",
+    "orientation_yaw",
+    "orientation_pitch",
+    "orientation_roll",
+    "gps_latitude",
+    "gps_longitude",
+    "gps_altitude",
+    "gps_speed",
+    "gps_accuracy",
+    "gps_satellites",
+    "accel_change",
+    "accel_change_rate",
+    "gyro_change",
+    "gyro_change_rate",
+    "magnetic_field_change",
+    "magnetic_field_change_rate",
+    "speed_change",
+    "speed_change_rate",
+    "yaw_change",
+    "yaw_change_rate",
+    "pitch_change",
+    "pitch_change_rate",
+    "roll_change",
+    "roll_change_rate",
+    "sensor_quality_score",
+    "accel_magnitude_rolling_mean",
+    "accel_magnitude_rolling_std",
+    "accel_magnitude_rolling_min",
+    "accel_magnitude_rolling_max",
+    "accel_magnitude_rolling_range",
+    "gyro_magnitude_rolling_mean",
+    "gyro_magnitude_rolling_std",
+    "gyro_magnitude_rolling_min",
+    "gyro_magnitude_rolling_max",
+    "gyro_magnitude_rolling_range",
+    "mag_magnitude_rolling_mean",
+    "mag_magnitude_rolling_std",
+    "mag_magnitude_rolling_min",
+    "mag_magnitude_rolling_max",
+    "mag_magnitude_rolling_range",
+    "gravity_magnitude_rolling_mean",
+    "gravity_magnitude_rolling_std",
+    "gravity_magnitude_rolling_min",
+    "gravity_magnitude_rolling_max",
+    "gravity_magnitude_rolling_range",
+    "gps_speed_rolling_mean",
+    "gps_speed_rolling_std",
+    "gps_speed_rolling_min",
+    "gps_speed_rolling_max",
+    "gps_speed_rolling_range",
+    "accel_change_rolling_mean",
+    "accel_change_rolling_std",
+    "accel_change_rolling_min",
+    "accel_change_rolling_max",
+    "accel_change_rolling_range",
+    "gyro_change_rolling_mean",
+    "gyro_change_rolling_std",
+    "gyro_change_rolling_min",
+    "gyro_change_rolling_max",
+    "gyro_change_rolling_range",
+    "speed_change_rolling_mean",
+    "speed_change_rolling_std",
+    "speed_change_rolling_min",
+    "speed_change_rolling_max",
+    "speed_change_rolling_range"
+]
+
 
 # ======================================================================
 # RANDOM SEED
@@ -901,20 +1012,10 @@ def load_sequence(sequence_id):
     ]
 
     # --------------------------------------------------------------
-    # Numeric features only
+    # Numeric features only (Filtered to deployable set)
     # --------------------------------------------------------------
 
-    numeric_df = feature_df.select_dtypes(
-        include=[np.number]
-    )
-
-    if numeric_df.empty:
-
-        raise RuntimeError(
-            f"No numeric features found for {sequence_id}."
-        )
-
-    X = numeric_df.to_numpy(
+    X = feature_df[feature_columns].to_numpy(
         dtype=np.float32
     )
 
@@ -989,25 +1090,30 @@ print("FEATURE CONSISTENCY")
 print("=" * 70)
 
 
-# Get numeric columns from the first feature file.
+# Get numeric columns from the first feature file, filtering for deployable features.
 sample_df = read_csv_safely(
     feature_files[
         TRAIN_IDS[0]
     ]
 )
 
-feature_columns = list(
-    sample_df.select_dtypes(
-        include=[np.number]
-    ).columns
-)
-
+feature_columns = [
+    f for f in DEPLOYABLE_SMARTPHONE_FEATURES
+    if f in sample_df.columns
+]
 
 print(
-    "Numeric feature count:",
+    "Numeric deployable feature count:",
     len(feature_columns)
 )
 
+if len(feature_columns) != 107:
+    print(f"[WARNING] Expected 107 features, but found {len(feature_columns)}")
+    missing = set(DEPLOYABLE_SMARTPHONE_FEATURES) - set(sample_df.columns)
+    if missing:
+        print("Missing features from Stage 3 output:")
+        for m in sorted(missing):
+            print(f" - {m}")
 
 # Make sure every sequence has the same number of numeric features.
 expected_feature_count = len(
@@ -1811,7 +1917,7 @@ best_val_loss = float(
 
 best_model_path = (
     MODEL_DIR
-    / "nav_shield_lstm_best.pt"
+    / "nav_shield_lstm_android_107.pt"
 )
 
 history = []

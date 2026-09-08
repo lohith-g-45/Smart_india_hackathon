@@ -3,6 +3,7 @@ package com.navshield.map.engine
 import com.navshield.map.contract.CandidateRoad
 import com.navshield.map.contract.MapMatchQuery
 import com.navshield.map.contract.MapMatchResult
+import com.navshield.map.contract.NavShieldSensorState
 import com.navshield.map.engine.math.Matrix
 import com.navshield.map.engine.math.GeoUtils
 import kotlin.math.exp
@@ -20,7 +21,8 @@ class MultiHypothesisEngine {
     private var hypotheses = mutableListOf<Hypothesis>()
     private val maxHypotheses = 5
 
-    fun update(query: MapMatchQuery, mapResult: MapMatchResult?, dt: Double, refLat: Double, refLon: Double): Hypothesis {
+    fun update(sensorInput: NavShieldSensorState, mapResult: MapMatchResult?, dt: Double, refLat: Double, refLon: Double): Hypothesis {
+        val query = sensorInput.toMapMatchQuery()
         if (hypotheses.isEmpty()) {
             val initialUkf = UKF(4)
             initialUkf.x[0, 0] = 0.0
@@ -35,19 +37,24 @@ class MultiHypothesisEngine {
             it.distanceTravelled += it.ukf.x[2, 0] * dt
         }
 
-        if (mapResult != null && mapResult.candidateRoads.size > 1) {
+        if (mapResult != null && mapResult.candidateRoads.isNotEmpty()) {
             spawnHypotheses(mapResult)
         }
 
         hypotheses.forEach { hypo ->
             // Sensor update
-            val pos = GeoUtils.project(query.latitude, query.longitude, refLat, refLon)
+            val pos = GeoUtils.project(sensorInput.latitude, sensorInput.longitude, refLat, refLon)
             val zSensor = Matrix(3, 1)
             zSensor[0, 0] = pos.first
             zSensor[1, 0] = pos.second
-            zSensor[2, 0] = Math.toRadians(GeoUtils.normalizeHeading(query.heading))
+            zSensor[2, 0] = Math.toRadians(GeoUtils.normalizeHeading(sensorInput.bearing))
             
-            val rSensor = Matrix.identity(3) * 5.0
+            // Scaling measurement noise based on Member 2 accuracy, confidence and anomaly status
+            val baseR = sensorInput.accuracy.coerceAtLeast(1.0)
+            val confidenceMultiplier = 1.0 / (sensorInput.confidence.coerceIn(0.01, 1.0))
+            val anomalyMultiplier = if (sensorInput.isAnomalous) 10.0 else 1.0
+            val rSensor = Matrix.identity(3) * (baseR * confidenceMultiplier * anomalyMultiplier)
+            
             hypo.ukf.update(zSensor, rSensor) { s -> 
                 val m = Matrix(3, 1)
                 m[0,0] = s[0,0]; m[1,0] = s[1,0]; m[2,0] = s[3,0]
@@ -72,8 +79,11 @@ class MultiHypothesisEngine {
                 
                 // Phase F requirement: correct hypothesis weight must grow
                 hypo.weight *= (1.0 + road.score * 0.2)
-            } else if (hypo.roadSegmentId.isNotEmpty()) {
-                hypo.weight *= 0.8
+            } else {
+                // Decay weight if its road is no longer a candidate OR it is the empty hypothesis while candidates exist
+                if (hypo.roadSegmentId.isNotEmpty() || (mapResult?.candidateRoads?.isNotEmpty() == true)) {
+                    hypo.weight *= 0.8
+                }
             }
         }
 

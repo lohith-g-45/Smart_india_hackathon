@@ -48,6 +48,117 @@ NON_FEATURE_COLUMNS = {
     "date",
 }
 
+# The 107 smartphone-deployable features for Member 5
+DEPLOYABLE_SMARTPHONE_FEATURES = [
+    "S_time_seconds",
+    "time_difference_seconds",
+    "S_GPS LATITUDE (degrees)",
+    "S_GPS LONGITUDE (degrees)",
+    "S_GPS ALTITUDE (m)",
+    "S_GPS SPEED (Kmh)",
+    "S_GPS ACCURACY (m)",
+    "S_GPS ORIENTATION (°)",
+    "S_TIME SINCE START (ms)",
+    "S_ACCELEROMETER X (m/s²)",
+    "S_ACCELEROMETER Y (m/s²)",
+    "S_ACCELEROMETER Z (m/s²)",
+    "S_GRAVITY X (m/s²)",
+    "S_GRAVITY Y (m/s²)",
+    "S_GRAVITY Z (m/s²)",
+    "S_GYROSCOPE Yaw (rad/s)",
+    "S_GYROSCOPE Pitch (rad/s)",
+    "S_GYROSCOPE Roll (rad/s)",
+    "S_MAGNETIC FIELD X (µT)",
+    "S_MAGNETIC FIELD Y (µT)",
+    "S_MAGNETIC FIELD Z (µT)",
+    "S_ORIENTATION (Yaw) (°)",
+    "S_ORIENTATION (Pitch) (°)",
+    "S_ORIENTATION (Roll ) (°)",
+    "timestamp",
+    "elapsed_time",
+    "delta_time",
+    "accel_x",
+    "accel_y",
+    "accel_z",
+    "accel_magnitude",
+    "gyro_yaw",
+    "gyro_pitch",
+    "gyro_roll",
+    "gyro_magnitude",
+    "mag_x",
+    "mag_y",
+    "mag_z",
+    "mag_magnitude",
+    "gravity_x",
+    "gravity_y",
+    "gravity_z",
+    "gravity_magnitude",
+    "orientation_yaw",
+    "orientation_pitch",
+    "orientation_roll",
+    "gps_latitude",
+    "gps_longitude",
+    "gps_altitude",
+    "gps_speed",
+    "gps_accuracy",
+    "gps_satellites",
+    "accel_change",
+    "accel_change_rate",
+    "gyro_change",
+    "gyro_change_rate",
+    "magnetic_field_change",
+    "magnetic_field_change_rate",
+    "speed_change",
+    "speed_change_rate",
+    "yaw_change",
+    "yaw_change_rate",
+    "pitch_change",
+    "pitch_change_rate",
+    "roll_change",
+    "roll_change_rate",
+    "sensor_quality_score",
+    "accel_magnitude_rolling_mean",
+    "accel_magnitude_rolling_std",
+    "accel_magnitude_rolling_min",
+    "accel_magnitude_rolling_max",
+    "accel_magnitude_rolling_range",
+    "gyro_magnitude_rolling_mean",
+    "gyro_magnitude_rolling_std",
+    "gyro_magnitude_rolling_min",
+    "gyro_magnitude_rolling_max",
+    "gyro_magnitude_rolling_range",
+    "mag_magnitude_rolling_mean",
+    "mag_magnitude_rolling_std",
+    "mag_magnitude_rolling_min",
+    "mag_magnitude_rolling_max",
+    "mag_magnitude_rolling_range",
+    "gravity_magnitude_rolling_mean",
+    "gravity_magnitude_rolling_std",
+    "gravity_magnitude_rolling_min",
+    "gravity_magnitude_rolling_max",
+    "gravity_magnitude_rolling_range",
+    "gps_speed_rolling_mean",
+    "gps_speed_rolling_std",
+    "gps_speed_rolling_min",
+    "gps_speed_rolling_max",
+    "gps_speed_rolling_range",
+    "accel_change_rolling_mean",
+    "accel_change_rolling_std",
+    "accel_change_rolling_min",
+    "accel_change_rolling_max",
+    "accel_change_rolling_range",
+    "gyro_change_rolling_mean",
+    "gyro_change_rolling_std",
+    "gyro_change_rolling_min",
+    "gyro_change_rolling_max",
+    "gyro_change_rolling_range",
+    "speed_change_rolling_mean",
+    "speed_change_rolling_std",
+    "speed_change_rolling_min",
+    "speed_change_rolling_max",
+    "speed_change_rolling_range"
+]
+
 
 # ============================================================
 # PATHS
@@ -233,26 +344,22 @@ def split_sequences(sequence_ids):
 def identify_features(datasets):
     """
     Determine common numeric feature columns across sequences.
-
-    Only columns present in every sequence are retained.
+    Restricted to the 107 smartphone-deployable features for Member 5.
     """
 
     if not datasets:
         raise ValueError("No datasets available.")
 
+    # We start with the 107 features we want for Android
+    target_features = set(DEPLOYABLE_SMARTPHONE_FEATURES)
     common_columns = None
 
     for df in datasets.values():
-
         numeric_columns = set()
-
         for column in df.columns:
-
-            if normalize_column_name(column) in NON_FEATURE_COLUMNS:
-                continue
-
-            if is_numeric_feature(df[column]):
-                numeric_columns.add(column)
+            if column in target_features:
+                if is_numeric_feature(df[column]):
+                    numeric_columns.add(column)
 
         if common_columns is None:
             common_columns = numeric_columns
@@ -261,10 +368,16 @@ def identify_features(datasets):
 
     if not common_columns:
         raise ValueError(
-            "No common numeric feature columns were found."
+            "No common smartphone numeric feature columns were found."
         )
 
-    return sorted(common_columns)
+    # Maintain the exact order from DEPLOYABLE_SMARTPHONE_FEATURES
+    final_ordered = [
+        f for f in DEPLOYABLE_SMARTPHONE_FEATURES
+        if f in common_columns
+    ]
+
+    return final_ordered
 
 
 # ============================================================

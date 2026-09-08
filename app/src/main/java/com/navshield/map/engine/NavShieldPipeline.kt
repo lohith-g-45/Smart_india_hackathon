@@ -1,8 +1,9 @@
 package com.navshield.map.engine
 
 import com.navshield.map.contract.MapMatchResult
+import com.navshield.map.contract.Member5Result
 import com.navshield.map.contract.NavShieldTrustState
-import com.navshield.map.members.PerceptionModule
+import com.navshield.map.members.Member5DriftGuardian
 import com.navshield.map.members.RoutingEngine
 import com.navshield.map.members.SensorFusionSource
 
@@ -12,6 +13,7 @@ import com.navshield.map.members.SensorFusionSource
  */
 data class NavShieldResult(
     val trustState: NavShieldTrustState,
+    val member5Result: Member5Result?,
     val statusMap: Map<Int, MemberStatus>
 )
 
@@ -23,7 +25,7 @@ class NavShieldPipeline(
     private val mapEngine: MapMatchingEngine,
     private val sensors: SensorFusionSource,
     private val router: RoutingEngine,
-    private val perception: PerceptionModule,
+    private val driftGuardian: Member5DriftGuardian,
     private val trustBrain: Member4Pipeline = Member4Pipeline()
 ) {
     /**
@@ -31,29 +33,33 @@ class NavShieldPipeline(
      */
     fun processCycle(timestamp: Long): NavShieldResult? {
         // 1. Get input from Member 2 (Sensors)
-        val query = sensors.getCurrentQuery() ?: return null
+        val sensorState = sensors.getCurrentState() ?: return null
 
-        // 2. Get input from Member 1 (Map)
+        // 2. Get input from Member 5 (AI Drift Guardian)
+        val aiPrediction = driftGuardian.predict(sensorState)
+
+        // 3. Get input from Member 1 (Map)
         val mapResult = if (mapEngine.isReady()) {
-            mapEngine.match(query)
+            mapEngine.match(sensorState.toMapMatchQuery())
         } else {
             null
         }
 
-        // 3. Process in Member 4 (Trust Brain / UKF)
-        val trustState = trustBrain.update(query, mapResult, timestamp)
+        // 4. Process in Member 4 (Trust Brain / UKF)
+        val trustState = trustBrain.update(sensorState, mapResult, aiPrediction, timestamp)
 
-        // 4. Update Member 3 (Router)
-        router.updateGuidance(trustState.latitude, trustState.longitude, trustState.mapMatchingStatus.roadSegmentId)
+        // 5. Update Member 3 (Router)
+        router.updateGuidance(trustState.final_latitude, trustState.final_longitude, trustState.active_hypothesis)
 
         return NavShieldResult(
             trustState = trustState,
+            member5Result = aiPrediction,
             statusMap = mapOf(
                 1 to NavShieldRegistry.member1Status,
                 2 to sensors.getStatus(),
                 3 to router.getStatus(),
                 4 to NavShieldRegistry.member4Status,
-                5 to perception.getStatus()
+                5 to driftGuardian.getStatus()
             )
         )
     }

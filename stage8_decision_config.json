@@ -1,0 +1,42 @@
+{
+    "version": 2,
+    "model_outputs": {
+        "output_0": {
+            "name": "position_error_m",
+            "unit": "m"
+        },
+        "output_1": {
+            "name": "velocity_error_m_s",
+            "unit": "m/s"
+        }
+    },
+    "decision_logic": {
+        "position_warning_m": 10.0,
+        "position_abnormal_m": 20.0,
+        "velocity_warning_m_s": 1.0,
+        "velocity_abnormal_m_s": 2.0,
+        "required_abnormal_signals": 1
+    },
+    "rules": {
+        "normal": "Both errors are below warning thresholds.",
+        "warning": "At least one error reaches warning threshold but abnormal threshold is not reached.",
+        "abnormal": "At least one error reaches abnormal threshold.",
+        "drift_detected": "ABNORMAL state caused by navigation-error threshold exceedance."
+    },
+    "android_output": {
+        "state_values": [
+            "NORMAL",
+            "WARNING",
+            "ABNORMAL"
+        ],
+        "drift_values": [
+            "NO",
+            "YES"
+        ]
+    },
+    "target_scaler": {
+        "required_for_inverse_transform": false,
+        "mean": null,
+        "scale": null
+    }
+}
