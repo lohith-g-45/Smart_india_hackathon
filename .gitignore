@@ -7,3 +7,10 @@ local.properties
 *.iml
 .DS_Store
 python_prototype/__pycache__/
+
+# Python project local artifacts
+__pycache__/
+.pytest_cache/
+tflite_env/
+data/
+results/

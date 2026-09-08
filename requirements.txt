@@ -1,0 +1,5 @@
+# NAV-SHIELD Member 5 - Stage 1 dependencies (lightweight, no ML frameworks)
+pandas>=1.5
+numpy>=1.23
+matplotlib>=3.6
+pytest>=7.0
