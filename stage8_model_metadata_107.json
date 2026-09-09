@@ -1,0 +1,38 @@
+{
+    "stage": 8,
+    "model_name": "nav_shield_lstm",
+    "architecture": {
+        "input_features": 107,
+        "sequence_length": 30,
+        "hidden_size": 64,
+        "lstm_layers": 2,
+        "fc": [
+            "Linear(64,64)",
+            "ReLU",
+            "Linear(64,2)"
+        ]
+    },
+    "outputs": [
+        "position_error_m",
+        "velocity_error_m_s"
+    ],
+    "output_semantics": {
+        "output_0": "position_error_m",
+        "output_1": "velocity_error_m_s"
+    },
+    "deployment_design": "TFLite regression + Android decision layer",
+    "model_retrained": false,
+    "raw_data_modified": false,
+    "previous_stages_modified": false,
+    "uncategorised_dataset_used": false,
+    "pytorch_sanity_test": true,
+    "keras_equivalence_test": true,
+    "tflite_inference_test": true,
+    "pytorch_keras_max_absolute_difference": 9.033828973770142e-08,
+    "pytorch_keras_mean_absolute_difference": 6.007030606269836e-08,
+    "pytorch_tflite_max_absolute_difference": 1.0803341865539551e-07,
+    "pytorch_tflite_mean_absolute_difference": 5.4016709327697754e-08,
+    "tflite_model": "C:\\Users\\tuala\\Downloads\\member5_ai_drift_stage1\\member5_ai_drift\\Smart_india_hackathon\\results\\stage8\\tflite_android\\nav_shield_107\\nav_shield_lstm_android_107.tflite",
+    "decision_config": "C:\\Users\\tuala\\Downloads\\member5_ai_drift_stage1\\member5_ai_drift\\Smart_india_hackathon\\results\\stage8\\tflite_android\\stage8_decision_config_107.json",
+    "target_scaler": "C:\\Users\\tuala\\Downloads\\member5_ai_drift_stage1\\member5_ai_drift\\Smart_india_hackathon\\results\\stage8\\reports\\stage8_target_scaler.joblib"
+}

@@ -50,7 +50,7 @@ class IntegrationTest {
         // Run a few cycles to allow the hypothesis to become best
         var result: NavShieldTrustState? = null
         for (i in 1..5) {
-            result = pipeline.update(sensor, map, null, 1000L + i * 100L)
+            result = pipeline.update(sensor, map, null, null, 1000L + i * 100L)
         }
         
         assertNotNull(result)
@@ -63,11 +63,11 @@ class IntegrationTest {
     fun `TEST 2 - GNSS anomaly integration`() {
         val pipeline = Member4Pipeline()
         // Provide normal GNSS first to initialize
-        pipeline.update(createSensorState(), createMapResult(), null, 1000L)
+        pipeline.update(createSensorState(), createMapResult(), null, null, 1000L)
         
         // Now provide anomalous GNSS
         val anomalousSensor = createSensorState(confidence = 0.2, isAnomalous = true, navMode = "ANOMALOUS")
-        val result = pipeline.update(anomalousSensor, createMapResult(), null, 2000L)
+        val result = pipeline.update(anomalousSensor, createMapResult(), null, null, 2000L)
         
         assertNotEquals(NavigationMode.GNSS_DOMINANT, result.navigation_mode)
         // Weight should be reduced
@@ -80,7 +80,7 @@ class IntegrationTest {
         
         // 1. GNSS Denied
         val deniedSensor = createSensorState(confidence = 0.0, isAnomalous = true, navMode = "DENIED")
-        var result = pipeline.update(deniedSensor, createMapResult(), null, 1000L)
+        var result = pipeline.update(deniedSensor, createMapResult(), null, null, 1000L)
         assertEquals(NavigationMode.GNSS_DENIED, result.navigation_mode)
         assertEquals(0.0, result.sensor_weights["gnss"]!!, 1e-6)
         
@@ -95,7 +95,7 @@ class IntegrationTest {
         var lastLon = startLon
         
         for (i in 1..5) {
-            result = pipeline.update(healthySensor, createMapResult(), null, 1000L + i * 1000L)
+            result = pipeline.update(healthySensor, createMapResult(), null, null, 1000L + i * 1000L)
             assertEquals(NavigationMode.RECOVERY, result.navigation_mode)
             
             // Verify smooth recovery (no huge jump)
@@ -115,9 +115,9 @@ class IntegrationTest {
         
         val pipeline = Member4Pipeline()
         // Run multiple cycles to stabilize
-        var result = pipeline.update(sensor, map, null, 1000L)
+        var result = pipeline.update(sensor, map, null, null, 1000L)
         for (i in 1..5) {
-            result = pipeline.update(sensor, map, null, 1000L + i * 100L)
+            result = pipeline.update(sensor, map, null, null, 1000L + i * 100L)
         }
         
         assertEquals("SEG_XYZ", result.active_hypothesis)
@@ -134,7 +134,7 @@ class IntegrationTest {
             candidateRoads = listOf(CandidateRoad("SEG_XYZ", 1.0, 12.98, 77.60, 0.0, 0.0, 0.0))
         )
         
-        val result2 = pipeline.update(sensor, shiftedMap, null, 2000L)
+        val result2 = pipeline.update(sensor, shiftedMap, null, null, 2000L)
         // The final position should move towards the map result
         assertTrue("Position should move towards map. Lat1: ${result.final_latitude}, Lat2: ${result2.final_latitude}", 
             result2.final_latitude > result.final_latitude)
@@ -147,15 +147,15 @@ class IntegrationTest {
         
         // Initialize both
         val initSensor = createSensorState(confidence = 1.0)
-        pipelineHigh.update(initSensor, null, null, 1000L)
-        pipelineLow.update(initSensor, null, null, 1000L)
+        pipelineHigh.update(initSensor, null, null, null, 1000L)
+        pipelineLow.update(initSensor, null, null, null, 1000L)
         
         // Move GNSS position significantly
         val movedSensorHigh = createSensorState(confidence = 1.0).copy(latitude = 12.98, longitude = 77.60)
         val movedSensorLow = createSensorState(confidence = 0.01).copy(latitude = 12.98, longitude = 77.60)
         
-        val resHigh = pipelineHigh.update(movedSensorHigh, null, null, 2000L)
-        val resLow = pipelineLow.update(movedSensorLow, null, null, 2000L)
+        val resHigh = pipelineHigh.update(movedSensorHigh, null, null, null, 2000L)
+        val resLow = pipelineLow.update(movedSensorLow, null, null, null, 2000L)
         
         // High confidence should track GNSS more closely
         val diffHigh = Math.abs(resHigh.final_latitude - movedSensorHigh.latitude)
@@ -171,13 +171,13 @@ class IntegrationTest {
         
         // 1. Normal AI prediction
         val normalAi = Member5Result(1.0f, 0.1f, 1000L, false, false, "NORMAL")
-        val res1 = pipeline.update(sensor, null, normalAi, 1000L)
+        val res1 = pipeline.update(sensor, null, null, normalAi, 1000L)
         assertEquals(1.0, res1.sensor_weights["ai"]!!, 0.1)
         assertFalse(res1.drift_warning)
 
         // 2. Abnormal AI prediction (Drift detected)
         val abnormalAi = Member5Result(25.0f, 2.5f, 2000L, true, true, "ABNORMAL")
-        val res2 = pipeline.update(sensor, null, abnormalAi, 2000L)
+        val res2 = pipeline.update(sensor, null, null, abnormalAi, 2000L)
         
         // AI weight should decrease because of high predicted error
         assertTrue("AI weight should decrease. Got: ${res2.sensor_weights["ai"]}", res2.sensor_weights["ai"]!! < 0.5)

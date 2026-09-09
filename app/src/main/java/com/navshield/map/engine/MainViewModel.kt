@@ -21,6 +21,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val sensorSource = AndroidSensorFusionSource(application)
     private val mapEngine = BasicMapMatchingEngine(repository)
     private val driftGuardian = Member5TfliteEngine(application)
+    private val insEngine = Member3InsEngine()
     
     // Placeholder implementations for Member 3
     private val router = object : RoutingEngine {
@@ -28,7 +29,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         override fun getStatus(): MemberStatus = MemberStatus.CONNECTED
     }
 
-    private val pipeline = NavShieldPipeline(mapEngine, sensorSource, router, driftGuardian)
+    private val pipeline = NavShieldPipeline(mapEngine, sensorSource, router, driftGuardian, insEngine)
     
     private val _trustState = MutableLiveData<NavShieldTrustState?>()
     val trustState: LiveData<NavShieldTrustState?> = _trustState
@@ -43,6 +44,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             _status.postValue("INITIALIZING DATA")
             mapDataModule.initialize()
             driftGuardian.initialize()
+            insEngine.initialize(System.currentTimeMillis())
             _status.postValue("READY")
         }
     }

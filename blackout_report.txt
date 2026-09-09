@@ -1,0 +1,8 @@
+Software-controlled simulated IMU / GNSS blackout test.
+
+| Test | Distance | Run 1 | Run 2 | Run 3 | Avg Error | Drift % | Result |
+|------|----------|-------|-------|-------|-----------|---------|--------|
+| 50m Straight | 50m | 3.24m | 3.24m | 3.24m | 3.24m | 6.48% | PASS |
+| 100m Straight | 100m | 3.60m | 3.60m | 3.60m | 3.60m | 3.60% | PASS |
+| 1km Straight | 1000m | 0.65m | 0.65m | 0.65m | 0.65m | 0.07% | PASS |
+| 1km Turn | 1000m | 0.56m | 0.56m | 0.56m | 0.56m | 0.06% | PASS |

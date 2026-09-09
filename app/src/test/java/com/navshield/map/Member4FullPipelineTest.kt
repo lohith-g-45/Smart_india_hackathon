@@ -31,12 +31,12 @@ class Member4FullPipelineTest {
         
         // 1. GNSS Available
         val s1 = createTestSensorState(12.0, 77.0, 0.0, 11.1)
-        val state1 = pipeline.update(s1, null, null, time)
+        val state1 = pipeline.update(s1, null, null, null, time)
         assertEquals(NavigationMode.GNSS_DOMINANT, state1.navigation_mode)
         
         // 2. Simulated Tunnel
         time += 5000L
-        val state2 = pipeline.update(s1, null, null, time)
+        val state2 = pipeline.update(s1, null, null, null, time)
         assertTrue(state2.estimated_position_error >= 0.0)
     }
 
@@ -46,7 +46,7 @@ class Member4FullPipelineTest {
         val s1 = createTestSensorState(12.0, 77.0, 0.0, 10.0)
         
         // Force high uncertainty
-        val state = pipeline.update(s1, null, null, 0L)
+        val state = pipeline.update(s1, null, null, null, 0L)
         assertNotNull(state)
     }
 
@@ -69,7 +69,7 @@ class Member4FullPipelineTest {
             )
         )
         
-        val state = pipeline.update(s1, mapResult, null, 1000L)
+        val state = pipeline.update(s1, mapResult, null, null, 1000L)
         assertTrue(state.hypothesis_list.size >= 2)
     }
 }

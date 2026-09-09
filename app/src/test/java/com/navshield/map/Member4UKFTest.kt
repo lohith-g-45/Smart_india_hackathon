@@ -35,7 +35,7 @@ class Member4UKFTest {
         
         // Starting at (12.0, 77.0)
         val sensorState = createTestSensorState(12.0, 77.0, 0.0, 10.0)
-        brain.update(sensorState, null, null, t0)
+        brain.update(sensorState, null, null, null, t0)
         
         // Map says we are actually at (12.0001, 77.0001) with high confidence
         val mapResult = MapMatchResult(
@@ -51,11 +51,11 @@ class Member4UKFTest {
             )
         )
         
-        var trustState = brain.update(sensorState, mapResult, null, t0 + 1000)
+        var trustState = brain.update(sensorState, mapResult, null, null, t0 + 1000)
         
         // Run a few more cycles to allow hypothesis weight to grow and state to converge
         for (i in 1..5) {
-            trustState = brain.update(sensorState, mapResult, null, t0 + 1000 + i * 100)
+            trustState = brain.update(sensorState, mapResult, null, null, t0 + 1000 + i * 100)
         }
         
         // State should have moved toward map position
@@ -70,7 +70,7 @@ class Member4UKFTest {
         val t0 = 1000L
         
         val sensorState = createTestSensorState(12.0, 77.0, 0.0, 0.0)
-        brain.update(sensorState, null, null, t0)
+        brain.update(sensorState, null, null, null, t0)
         
         // Map says we are far away but with very low confidence
         val mapResult = MapMatchResult(
@@ -86,7 +86,7 @@ class Member4UKFTest {
             )
         )
         
-        val trustState = brain.update(sensorState, mapResult, null, t0 + 1000)
+        val trustState = brain.update(sensorState, mapResult, null, null, t0 + 1000)
         
         // Latitude should be very close to 12.0, not 12.1
         assertEquals(12.0, trustState.final_latitude, 0.001)
@@ -98,16 +98,16 @@ class Member4UKFTest {
         
         // T=0
         val s1 = createTestSensorState(12.0, 77.0, 90.0, 10.0) // Heading North
-        brain.update(s1, null, null, 0)
+        brain.update(s1, null, null, null, 0)
         
         // T=1s, no map, only prediction
-        val state1 = brain.update(s1, null, null, 1000)
+        val state1 = brain.update(s1, null, null, null, 1000)
         
         // Vehicle should have moved North (Latitude increases)
         assertTrue(state1.final_latitude > 12.0)
         
         // T=2s
-        val state2 = brain.update(s1, null, null, 2000)
+        val state2 = brain.update(s1, null, null, null, 2000)
         assertTrue(state2.final_latitude > state1.final_latitude)
     }
 
@@ -115,13 +115,13 @@ class Member4UKFTest {
     fun `UKF reset clears state`() {
         val brain = Member4Pipeline()
         val s1 = createTestSensorState(12.0, 77.0, 0.0, 10.0)
-        brain.update(s1, null, null, 0)
+        brain.update(s1, null, null, null, 0)
         
         brain.reset()
         
         // Next update will be a fresh initialization at new position
         val s2 = createTestSensorState(13.0, 78.0, 0.0, 0.0)
-        val state = brain.update(s2, null, null, 1000)
+        val state = brain.update(s2, null, null, null, 1000)
         assertEquals(13.0, state.final_latitude, 0.0001)
     }
 }
